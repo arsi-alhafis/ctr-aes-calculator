@@ -1,5 +1,9 @@
 package com.aes;
 
+/**
+ * Created by arsia on 06-Apr-17.
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -11,9 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-/**
- * Created by arsia on 06-Apr-17.
- */
 public class Apps extends JPanel{
     private JPanel panel1;
     private JRadioButton encryptRadioButton;
