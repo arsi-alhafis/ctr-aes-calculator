@@ -20,9 +20,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class Aes {
-    private static byte[] ivBytes = new byte[] {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d,
-            0x0e, 0x0f};
-
     public static String start(File inputFile, File keyFile, Type type) throws Exception {
         Path inputPath = Paths.get(inputFile.getAbsolutePath());
         Path keyPath = Paths.get(keyFile.getAbsolutePath());
@@ -33,22 +30,21 @@ public class Aes {
         byte[] input = Files.readAllBytes(inputPath);
 
         if (type.equals(Type.ENCRYPT)){
-            return encrypt(inputFile.getName(), input, keyBytes, ivBytes);
+            return encrypt(inputFile.getName(), input, keyBytes);
         } else {
-            return decrypt(input, keyBytes, ivBytes);
+            return decrypt(input, keyBytes);
         }
     }
 
-    private static String encrypt(String fileName, byte[] input, byte[] keyBytes, byte[] ivBytes) throws Exception {
+    private static String encrypt(String fileName, byte[] input, byte[] keyBytes) throws Exception {
         SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
-        IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
         Cipher cipher = Cipher.getInstance("AES/CTR/PKCS5Padding");
 
         String hexFileName = toHexString(fileName + ";");
         byte[] byteFileName = hexStringToByteArray(hexFileName);
         input = ArrayUtils.addAll(byteFileName, input);
 
-        cipher.init(Cipher.ENCRYPT_MODE, key, ivSpec);
+        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(new byte[16]));
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(input);
         CipherInputStream cipherInputStream = new CipherInputStream(byteArrayInputStream, cipher);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -66,14 +62,13 @@ public class Aes {
         return cipherPath.toAbsolutePath().toString();
     }
 
-    private static String decrypt(byte[] input, byte[] keyBytes, byte[] ivBytes) throws Exception{
+    private static String decrypt(byte[] input, byte[] keyBytes) throws Exception{
         SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
-        IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
         Cipher cipher = Cipher.getInstance("AES/CTR/PKCS5Padding");
 
         ByteArrayOutputStream byteArrayOutputStream;
 
-        cipher.init(Cipher.DECRYPT_MODE, key, ivSpec);
+        cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(new byte[16]));
         byteArrayOutputStream = new ByteArrayOutputStream();
         CipherOutputStream cipherOutputStream = new CipherOutputStream(byteArrayOutputStream, cipher);
         cipherOutputStream.write(input);
