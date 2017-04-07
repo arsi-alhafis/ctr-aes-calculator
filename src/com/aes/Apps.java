@@ -6,8 +6,6 @@ package com.aes;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,11 +31,9 @@ public class Apps extends JPanel{
     private File keyFile;
 
     private boolean inputFileSelected;
-    private boolean keyFileSelected;
-
     private boolean keyAllowed;
 
-    public Apps(){
+    private Apps(){
         encryptRadioButton.setActionCommand("enc");
         decryptRadioButton.setActionCommand("dec");
 
@@ -53,7 +49,6 @@ public class Apps extends JPanel{
         fc = new JFileChooser();
 
         inputFileSelected = false;
-        keyFileSelected = false;
         keyAllowed = false;
 
         allowedKeyLength = new ArrayList<>();
@@ -63,69 +58,61 @@ public class Apps extends JPanel{
 
         GOOOOOButton.setEnabled(false);
 
-        inputButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int returnVal = fc.showOpenDialog(Apps.this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    inputFile = fc.getSelectedFile();
-                    inputFileSelected = true;
+        inputButton.addActionListener(e -> {
+            int returnVal = fc.showOpenDialog(Apps.this);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                inputFile = fc.getSelectedFile();
+                inputFileSelected = true;
 
-                    textArea2.setText(inputFile.getAbsolutePath());
+                textArea2.setText(inputFile.getAbsolutePath());
 
-                    if (keyAllowed) GOOOOOButton.setEnabled(true);
+                if (keyAllowed) GOOOOOButton.setEnabled(true);
+            }
+        });
+
+        keyButton.addActionListener(e -> {
+            int returnVal = fc.showOpenDialog(Apps.this);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                keyFile = fc.getSelectedFile();
+
+                Path keyPath = Paths.get(keyFile.getAbsolutePath());
+                try {
+                    String keyHex = Files.readAllLines(keyPath).get(0);
+                    byte[] keyBytes = Aes.hexStringToByteArray(keyHex);
+
+                    textArea1.setText(keyFile.getAbsolutePath() + "\n\n");
+                    textArea1.append("Key length: " + String.valueOf(keyBytes.length * 8) + " bits");
+
+                    if (allowedKeyLength.contains(keyBytes.length)) {
+                        keyAllowed = true;
+                        textArea1.append(" [Allowed]");
+                        if (inputFileSelected) GOOOOOButton.setEnabled(true);
+                    } else {
+                        textArea1.append(" [Not Allowed]\n");
+                        textArea1.append("Use 128, 192, or 256 bits key.");
+                    }
+                } catch (IOException e1) {
+                    e1.printStackTrace();
                 }
             }
         });
 
-        keyButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int returnVal = fc.showOpenDialog(Apps.this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    keyFile = fc.getSelectedFile();
-
-                    Path keyPath = Paths.get(keyFile.getAbsolutePath());
-                    try {
-                        String keyHex = Files.readAllLines(keyPath).get(0);
-                        byte[] keyBytes = Aes.hexStringToByteArray(keyHex);
-
-                        textArea1.setText(keyFile.getAbsolutePath() + "\n\n");
-                        textArea1.append("Key length: " + String.valueOf(keyBytes.length * 8) + " bits");
-
-                        if (allowedKeyLength.contains(keyBytes.length)) {
-                            keyAllowed = true;
-                            textArea1.append(" [Allowed]");
-                            if (inputFileSelected) GOOOOOButton.setEnabled(true);
-                        } else {
-                            textArea1.append(" [Not Allowed]");
-                        }
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+        GOOOOOButton.addActionListener(e -> {
+            if (group.getSelection().getActionCommand().equals("enc")) {
+                try {
+                    String result = Aes.start(inputFile, keyFile, Type.ENCRYPT);
+                    textArea3.setText("ENCRYPTION COMPLETE\n\n");
+                    textArea3.append("Location: " + result);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
                 }
-            }
-        });
-
-        GOOOOOButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (group.getSelection().getActionCommand().equals("enc")) {
-                    try {
-                        String result = Aes.start(inputFile, keyFile, Type.ENCRYPT);
-                        textArea3.setText("ENCRYPTION COMPLETE\n\n");
-                        textArea3.append("Location: " + result);
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                    }
-                } else {
-                    try {
-                        String result = Aes.start(inputFile, keyFile, Type.DECRYPT);
-                        textArea3.setText("DECRYPTION COMPLETE\n\n");
-                        textArea3.append("Location: " + result);
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                    }
+            } else {
+                try {
+                    String result = Aes.start(inputFile, keyFile, Type.DECRYPT);
+                    textArea3.setText("DECRYPTION COMPLETE\n\n");
+                    textArea3.append("Location: " + result);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
                 }
             }
         });
@@ -136,7 +123,7 @@ public class Apps extends JPanel{
         frame.setContentPane(new Apps().panel1);
         frame.setPreferredSize(new Dimension(800, 400));
         frame.setLocation(200, 200);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
     }

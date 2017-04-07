@@ -19,8 +19,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-public class Aes {
-    public static String start(File inputFile, File keyFile, Type type) throws Exception {
+class Aes {
+    static String start(File inputFile, File keyFile, Type type) throws Exception {
         Path inputPath = Paths.get(inputFile.getAbsolutePath());
         Path keyPath = Paths.get(keyFile.getAbsolutePath());
 
@@ -85,9 +85,7 @@ public class Aes {
         }
 
         byte[] byteFileName = new byte[count];
-        for(int i = 0; i < count; i++) {
-            byteFileName[i] = decryptedByte[i];
-        }
+        System.arraycopy(decryptedByte, 0, byteFileName, 0, count);
 
         byte[] fileBytes = Arrays.copyOfRange(decryptedByte, count, decryptedByte.length);
         String fileName = fromHexString(toHexString(byteFileName));
@@ -100,8 +98,7 @@ public class Aes {
 
     private static String toHexString(byte[] ba) {
         StringBuilder str = new StringBuilder();
-        for(int i = 0; i < ba.length; i++)
-            str.append(String.format("%x", ba[i]));
+        for (byte aBa : ba) str.append(String.format("%x", aBa));
         return str.toString();
     }
 
@@ -118,7 +115,7 @@ public class Aes {
         return str.toString();
     }
 
-    public static byte[] hexStringToByteArray(String hex) {
+    static byte[] hexStringToByteArray(String hex) {
         int len = hex.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
