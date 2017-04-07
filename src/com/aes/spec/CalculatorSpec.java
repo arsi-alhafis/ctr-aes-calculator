@@ -4,7 +4,7 @@ import com.aes.Type;
 import java.io.File;
 
 /**
- * Created by arsia on 07-Apr-17.
+ * Created by arsi on 07-Apr-17.
  */
 public class CalculatorSpec {
     private File inputFile;

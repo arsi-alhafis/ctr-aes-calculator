@@ -5,6 +5,7 @@ package com.aes;
  */
 
 import com.aes.spec.CalculatorSpec;
+import com.aes.util.StringUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -80,7 +81,7 @@ public class Calculator extends JPanel{
                 Path keyPath = Paths.get(keyFile.getAbsolutePath());
                 try {
                     String keyHex = Files.readAllLines(keyPath).get(0);
-                    byte[] keyBytes = Aes.hexStringToByteArray(keyHex);
+                    byte[] keyBytes = StringUtil.hexStringToByteArray(keyHex);
 
                     textArea1.setText(keyFile.getAbsolutePath() + "\n\n");
                     textArea1.append("Key length: " + String.valueOf(keyBytes.length * 8) + " bits");

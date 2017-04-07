@@ -5,15 +5,14 @@ package com.aes;
  */
 
 import com.aes.spec.CalculatorSpec;
+import com.aes.util.StringUtil;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 
 import java.io.*;
-import java.lang.Integer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +24,7 @@ class Aes {
         Path keyPath = Paths.get(spec.getKeyFile().getAbsolutePath());
 
         String keyHex = Files.readAllLines(keyPath).get(0);
-        byte[] keyBytes = hexStringToByteArray(keyHex);
+        byte[] keyBytes = StringUtil.hexStringToByteArray(keyHex);
         byte[] input = Files.readAllBytes(inputPath);
 
         if (spec.getType() == Type.ENCRYPT){
@@ -39,8 +38,8 @@ class Aes {
         SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
         Cipher cipher = Cipher.getInstance("AES/CTR/PKCS5Padding");
 
-        String hexFileName = toHexString(fileName + ";");
-        byte[] byteFileName = hexStringToByteArray(hexFileName);
+        String hexFileName = StringUtil.toHexString(fileName + ";");
+        byte[] byteFileName = StringUtil.hexStringToByteArray(hexFileName);
         input = ArrayUtils.addAll(byteFileName, input);
 
         cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(new byte[16]));
@@ -75,56 +74,17 @@ class Aes {
 
         byte[] decryptedByte = byteArrayOutputStream.toByteArray();
 
-        int delimiterPos = findDelimiter(decryptedByte);
+        int delimiterPos = StringUtil.findDelimiter(decryptedByte);
         decryptedByte = ArrayUtils.removeElement(decryptedByte, (byte) 0x3B); // removing ";"
 
         byte[] byteFileName = new byte[delimiterPos];
         System.arraycopy(decryptedByte, 0, byteFileName, 0, delimiterPos);
-        String fileName = fromHexString(toHexString(byteFileName));
+        String fileName = StringUtil.fromHexString(StringUtil.toHexString(byteFileName));
         byte[] fileBytes = Arrays.copyOfRange(decryptedByte, delimiterPos, decryptedByte.length);
 
         Path decryptedPath = Paths.get("[decrypted] " + fileName);
         Files.write(decryptedPath, fileBytes);
 
         return decryptedPath.toAbsolutePath().toString();
-    }
-
-    private static int findDelimiter(byte[] decryptedByte) {
-        int count = 0;
-        while (true) {
-            if (decryptedByte[count] == (byte) 0x3B) { // 0x3B == ";"
-                return count;
-            }
-            count++;
-        }
-    }
-
-    private static String toHexString(byte[] ba) {
-        StringBuilder str = new StringBuilder();
-        for (byte aBa : ba) str.append(String.format("%x", aBa));
-        return str.toString();
-    }
-
-    private static String toHexString(String text) throws UnsupportedEncodingException {
-        byte[] myBytes = text.getBytes("UTF-8");
-        return DatatypeConverter.printHexBinary(myBytes);
-    }
-
-    private static String fromHexString(String hex) {
-        StringBuilder str = new StringBuilder();
-        for (int i = 0; i < hex.length(); i+=2) {
-            str.append((char) Integer.parseInt(hex.substring(i, i + 2), 16));
-        }
-        return str.toString();
-    }
-
-    static byte[] hexStringToByteArray(String hex) {
-        int len = hex.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                    + Character.digit(hex.charAt(i+1), 16));
-        }
-        return data;
     }
 }
