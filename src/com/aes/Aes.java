@@ -26,7 +26,6 @@ class Aes {
 
         String keyHex = Files.readAllLines(keyPath).get(0);
         byte[] keyBytes = hexStringToByteArray(keyHex);
-
         byte[] input = Files.readAllBytes(inputPath);
 
         if (spec.getType() == Type.ENCRYPT){
@@ -75,25 +74,29 @@ class Aes {
         cipherOutputStream.close();
 
         byte[] decryptedByte = byteArrayOutputStream.toByteArray();
-        int count = 0;
-        while (true) {
-            if (decryptedByte[count] == (byte) 0x3B) {
-                decryptedByte = ArrayUtils.removeElement(decryptedByte, (byte) 0x3B);
-                break;
-            }
-            count++;
-        }
 
-        byte[] byteFileName = new byte[count];
-        System.arraycopy(decryptedByte, 0, byteFileName, 0, count);
+        int delimiterPos = findDelimiter(decryptedByte);
+        decryptedByte = ArrayUtils.removeElement(decryptedByte, (byte) 0x3B); // removing ";"
 
-        byte[] fileBytes = Arrays.copyOfRange(decryptedByte, count, decryptedByte.length);
+        byte[] byteFileName = new byte[delimiterPos];
+        System.arraycopy(decryptedByte, 0, byteFileName, 0, delimiterPos);
         String fileName = fromHexString(toHexString(byteFileName));
+        byte[] fileBytes = Arrays.copyOfRange(decryptedByte, delimiterPos, decryptedByte.length);
 
         Path decryptedPath = Paths.get("[decrypted] " + fileName);
         Files.write(decryptedPath, fileBytes);
 
         return decryptedPath.toAbsolutePath().toString();
+    }
+
+    private static int findDelimiter(byte[] decryptedByte) {
+        int count = 0;
+        while (true) {
+            if (decryptedByte[count] == (byte) 0x3B) { // 0x3B == ";"
+                return count;
+            }
+            count++;
+        }
     }
 
     private static String toHexString(byte[] ba) {
