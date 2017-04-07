@@ -88,14 +88,15 @@ public class Calculator extends JPanel{
 
                     if (allowedKeyLength.contains(keyBytes.length)) {
                         keyAllowed = true;
-                        textArea1.append(" [Allowed]");
+                        textArea1.append(" [ALLOWED]");
                         if (inputFileSelected) GOOOOOButton.setEnabled(true);
                     } else {
-                        textArea1.append(" [Not Allowed]\n");
+                        textArea1.append(" [NOT ALLOWED]\n");
                         textArea1.append("Use 128, 192, or 256 bits key.");
                     }
                 } catch (IOException e1) {
-                    e1.printStackTrace();
+                    textArea1.setText(keyFile.getAbsolutePath() + "\n\n");
+                    textArea1.append("[INVALID KEY FILE]");
                 }
             }
         });
