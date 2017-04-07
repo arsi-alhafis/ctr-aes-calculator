@@ -4,6 +4,7 @@ package com.aes;
  * Created by arsi on 05/04/17.
  */
 
+import com.aes.spec.CalculatorSpec;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.crypto.*;
@@ -12,7 +13,6 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
 import java.io.*;
-import java.io.File;
 import java.lang.Integer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,17 +20,17 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 
 class Aes {
-    static String start(File inputFile, File keyFile, Type type) throws Exception {
-        Path inputPath = Paths.get(inputFile.getAbsolutePath());
-        Path keyPath = Paths.get(keyFile.getAbsolutePath());
+    static String start(CalculatorSpec spec) throws Exception {
+        Path inputPath = Paths.get(spec.getInputFile().getAbsolutePath());
+        Path keyPath = Paths.get(spec.getKeyFile().getAbsolutePath());
 
         String keyHex = Files.readAllLines(keyPath).get(0);
         byte[] keyBytes = hexStringToByteArray(keyHex);
 
         byte[] input = Files.readAllBytes(inputPath);
 
-        if (type == Type.ENCRYPT){
-            return encrypt(inputFile.getName(), input, keyBytes);
+        if (spec.getType() == Type.ENCRYPT){
+            return encrypt(spec.getInputFile().getName(), input, keyBytes);
         } else {
             return decrypt(input, keyBytes);
         }
