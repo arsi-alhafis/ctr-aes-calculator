@@ -29,7 +29,7 @@ class Aes {
 
         byte[] input = Files.readAllBytes(inputPath);
 
-        if (type.equals(Type.ENCRYPT)){
+        if (type == Type.ENCRYPT){
             return encrypt(inputFile.getName(), input, keyBytes);
         } else {
             return decrypt(input, keyBytes);
