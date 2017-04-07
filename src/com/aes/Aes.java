@@ -6,6 +6,7 @@ package com.aes;
 
 import com.aes.spec.CalculatorSpec;
 import com.aes.util.StringUtil;
+import com.aes.util.Type;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.crypto.*;

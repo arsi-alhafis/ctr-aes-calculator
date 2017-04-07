@@ -1,6 +1,6 @@
 package com.aes.spec;
 
-import com.aes.Type;
+import com.aes.util.Type;
 import java.io.File;
 
 /**
