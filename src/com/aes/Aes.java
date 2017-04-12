@@ -42,8 +42,9 @@ class Aes {
         String hexFileName = StringUtil.toHexString(fileName + ";");
         byte[] byteFileName = StringUtil.hexStringToByteArray(hexFileName);
         input = ArrayUtils.addAll(byteFileName, input);
+        byte[] iv = StringUtil.generateIV();
 
-        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(new byte[16]));
+        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(input);
         CipherInputStream cipherInputStream = new CipherInputStream(byteArrayInputStream, cipher);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -56,7 +57,9 @@ class Aes {
         byte[] cipherText = byteArrayOutputStream.toByteArray();
 
         Path cipherPath = Paths.get("cipher");
-        Files.write(cipherPath, cipherText);
+
+        byte[] ivPlusDelim = ArrayUtils.addAll(iv, StringUtil.hexStringToByteArray(StringUtil.toHexString("?")));
+        Files.write(cipherPath, ArrayUtils.addAll(ivPlusDelim, cipherText));
 
         return cipherPath.toAbsolutePath().toString();
     }
@@ -67,21 +70,28 @@ class Aes {
 
         ByteArrayOutputStream byteArrayOutputStream;
 
-        cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(new byte[16]));
+        int ivDelimiterPos = StringUtil.findIvDelimiter(input);
+        input = ArrayUtils.removeElement(input, (byte) 0x3F);
+
+        byte[] ivByte = new byte[ivDelimiterPos];
+        System.arraycopy(input, 0, ivByte, 0, ivDelimiterPos);
+        input = Arrays.copyOfRange(input, ivDelimiterPos, input.length);
+
+        System.out.print(StringUtil.toHexString(ivByte));
+        cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(ivByte));
         byteArrayOutputStream = new ByteArrayOutputStream();
         CipherOutputStream cipherOutputStream = new CipherOutputStream(byteArrayOutputStream, cipher);
         cipherOutputStream.write(input);
         cipherOutputStream.close();
 
         byte[] decryptedByte = byteArrayOutputStream.toByteArray();
-
-        int delimiterPos = StringUtil.findDelimiter(decryptedByte);
+        int nameDelimiterPos = StringUtil.findNameDelimiter(decryptedByte);
         decryptedByte = ArrayUtils.removeElement(decryptedByte, (byte) 0x3B); // removing ";"
 
-        byte[] byteFileName = new byte[delimiterPos];
-        System.arraycopy(decryptedByte, 0, byteFileName, 0, delimiterPos);
+        byte[] byteFileName = new byte[nameDelimiterPos];
+        System.arraycopy(decryptedByte, 0, byteFileName, 0, nameDelimiterPos);
         String fileName = StringUtil.fromHexString(StringUtil.toHexString(byteFileName));
-        byte[] fileBytes = Arrays.copyOfRange(decryptedByte, delimiterPos, decryptedByte.length);
+        byte[] fileBytes = Arrays.copyOfRange(decryptedByte, nameDelimiterPos, decryptedByte.length);
 
         Path decryptedPath = Paths.get("[decrypted] " + fileName);
         Files.write(decryptedPath, fileBytes);

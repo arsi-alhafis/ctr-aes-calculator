@@ -6,6 +6,7 @@ package com.aes.util;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
+import java.security.SecureRandom;
 
 public class StringUtil {
     public static String toHexString(byte[] ba) {
@@ -37,13 +38,34 @@ public class StringUtil {
         return data;
     }
 
-    public static int findDelimiter(byte[] decryptedByte) {
+    public static int findNameDelimiter(byte[] bytes) {
         int count = 0;
         while (true) {
-            if (decryptedByte[count] == (byte) 0x3B) { // 0x3B == ";"
+            if (bytes[count] == (byte) 0x3B) { // 0x3B == ";"
                 return count;
             }
             count++;
         }
+    }
+
+    public static int findIvDelimiter(byte[] bytes) {
+        int count = 0;
+        while (true) {
+            if (bytes[count] == (byte) 0x3F) { // 0x3F == "?"
+                return count;
+            }
+            count++;
+        }
+    }
+
+    public static byte[] generateIV() {
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] newSeed = secureRandom.generateSeed(16);
+        secureRandom.setSeed(newSeed);
+
+        byte[] byteIV = new byte[16];
+        secureRandom.nextBytes(byteIV);
+
+        return byteIV;
     }
 }
