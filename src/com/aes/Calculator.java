@@ -95,9 +95,11 @@ public class Calculator extends JPanel{
                         textArea1.append(" [NOT ALLOWED]\n");
                         textArea1.append("Use 128, 192, or 256 bits key.");
                     }
-                } catch (IOException e1) {
+                } catch (Exception e1) {
                     textArea1.setText(keyFile.getAbsolutePath() + "\n\n");
-                    textArea1.append("[INVALID KEY FILE]");
+                    textArea1.append("[INVALID KEY FILE]\n");
+                    textArea1.append("Use 128, 192, or 256 bits key.\n");
+                    textArea1.append("Key file must a hexadecimal string.");
                 }
             }
         });

@@ -48,16 +48,6 @@ public class StringUtil {
         }
     }
 
-    public static int findIvDelimiter(byte[] bytes) {
-        int count = 0;
-        while (true) {
-            if (bytes[count] == (byte) 0x3F) { // 0x3F == "?"
-                return count;
-            }
-            count++;
-        }
-    }
-
     public static byte[] generateIV() {
         SecureRandom secureRandom = new SecureRandom();
         byte[] newSeed = secureRandom.generateSeed(16);

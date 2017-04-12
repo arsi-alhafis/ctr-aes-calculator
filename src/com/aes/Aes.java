@@ -57,9 +57,7 @@ class Aes {
         byte[] cipherText = byteArrayOutputStream.toByteArray();
 
         Path cipherPath = Paths.get("cipher");
-
-        byte[] ivPlusDelim = ArrayUtils.addAll(iv, StringUtil.hexStringToByteArray(StringUtil.toHexString("?")));
-        Files.write(cipherPath, ArrayUtils.addAll(ivPlusDelim, cipherText));
+        Files.write(cipherPath, ArrayUtils.addAll(iv, cipherText));
 
         return cipherPath.toAbsolutePath().toString();
     }
@@ -70,14 +68,10 @@ class Aes {
 
         ByteArrayOutputStream byteArrayOutputStream;
 
-        int ivDelimiterPos = StringUtil.findIvDelimiter(input);
-        input = ArrayUtils.removeElement(input, (byte) 0x3F);
+        byte[] ivByte = new byte[16];
+        System.arraycopy(input, 0, ivByte, 0, 16);
+        input = Arrays.copyOfRange(input, 16, input.length);
 
-        byte[] ivByte = new byte[ivDelimiterPos];
-        System.arraycopy(input, 0, ivByte, 0, ivDelimiterPos);
-        input = Arrays.copyOfRange(input, ivDelimiterPos, input.length);
-
-        System.out.print(StringUtil.toHexString(ivByte));
         cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(ivByte));
         byteArrayOutputStream = new ByteArrayOutputStream();
         CipherOutputStream cipherOutputStream = new CipherOutputStream(byteArrayOutputStream, cipher);
