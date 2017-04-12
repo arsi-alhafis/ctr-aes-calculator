@@ -56,7 +56,7 @@ class Aes {
 
         byte[] cipherText = byteArrayOutputStream.toByteArray();
 
-        Path cipherPath = Paths.get("cipher");
+        Path cipherPath = Paths.get("cipher.enc");
         Files.write(cipherPath, ArrayUtils.addAll(iv, cipherText));
 
         return cipherPath.toAbsolutePath().toString();
