@@ -125,7 +125,10 @@ public class Calculator extends JPanel{
                     textArea3.setText("DECRYPTION COMPLETE\n\n");
                     textArea3.append("Location: " + result);
                 } catch (Exception e1) {
-                    e1.printStackTrace();
+                    textArea3.setText("Unmatched input file and key file.\n\n");
+                    textArea3.append("This can be caused by: \n");
+                    textArea3.append("- The input file is not a cipher file, or \n");
+                    textArea3.append("- The key file is a wrong key. \n");
                 }
             }
         });
