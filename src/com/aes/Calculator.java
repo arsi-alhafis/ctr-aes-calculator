@@ -11,7 +11,6 @@ import com.aes.util.Type;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,7 +22,7 @@ public class Calculator extends JPanel{
     private JRadioButton decryptRadioButton;
     private JButton inputButton;
     private JButton keyButton;
-    private JButton GOOOOOButton;
+    private JButton submitButton;
     private JTextArea textArea1;
     private JTextArea textArea2;
     private JTextArea textArea3;
@@ -60,7 +59,17 @@ public class Calculator extends JPanel{
         allowedKeyLength.add(24);
         allowedKeyLength.add(32);
 
-        GOOOOOButton.setEnabled(false);
+        submitButton.setEnabled(false);
+
+        submitButton.setText("Encrypt");
+
+        encryptRadioButton.addActionListener(e -> {
+            submitButton.setText("Encrypt");
+        });
+
+        decryptRadioButton.addActionListener(e -> {
+            submitButton.setText("Decrypt");
+        });
 
         inputButton.addActionListener(e -> {
             int returnVal = fc.showOpenDialog(Calculator.this);
@@ -70,7 +79,7 @@ public class Calculator extends JPanel{
 
                 textArea2.setText(inputFile.getAbsolutePath());
 
-                if (keyAllowed) GOOOOOButton.setEnabled(true);
+                if (keyAllowed) submitButton.setEnabled(true);
             }
         });
 
@@ -90,7 +99,7 @@ public class Calculator extends JPanel{
                     if (allowedKeyLength.contains(keyBytes.length)) {
                         keyAllowed = true;
                         textArea1.append(" [ALLOWED]");
-                        if (inputFileSelected) GOOOOOButton.setEnabled(true);
+                        if (inputFileSelected) submitButton.setEnabled(true);
                     } else {
                         textArea1.append(" [NOT ALLOWED]\n");
                         textArea1.append("Use 128, 192, or 256 bits key.");
@@ -104,7 +113,7 @@ public class Calculator extends JPanel{
             }
         });
 
-        GOOOOOButton.addActionListener(e -> {
+        submitButton.addActionListener(e -> {
             CalculatorSpec spec = new CalculatorSpec();
             spec.setInputFile(inputFile);
             spec.setKeyFile(keyFile);
