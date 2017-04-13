@@ -28,7 +28,7 @@ class Aes {
         byte[] keyBytes = StringUtil.hexStringToByteArray(keyHex);
         byte[] input = Files.readAllBytes(inputPath);
 
-        if (spec.getType() == Type.ENCRYPT){
+        if (spec.getType().equals(Type.ENCRYPT)){
             return encrypt(spec.getInputFile().getName(), input, keyBytes);
         } else {
             return decrypt(input, keyBytes);

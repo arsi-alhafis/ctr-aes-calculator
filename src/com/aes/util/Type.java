@@ -5,6 +5,16 @@ package com.aes.util;
  */
 
 public enum Type {
-    ENCRYPT,
-    DECRYPT
+    ENCRYPT ("Encrypt"),
+    DECRYPT ("Decrypt");
+
+    private final String type;
+
+    Type(String type) {
+        this.type = type;
+    }
+
+    public String toString() {
+        return this.type;
+    }
 }

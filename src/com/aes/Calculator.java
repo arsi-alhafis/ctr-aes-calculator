@@ -37,8 +37,8 @@ public class Calculator extends JPanel{
     private boolean keyAllowed;
 
     private Calculator(){
-        encryptRadioButton.setActionCommand("enc");
-        decryptRadioButton.setActionCommand("dec");
+        encryptRadioButton.setActionCommand(Type.ENCRYPT.toString());
+        decryptRadioButton.setActionCommand(Type.DECRYPT.toString());
 
         textArea2.setEditable(false);
         textArea1.setEditable(false);
@@ -60,16 +60,9 @@ public class Calculator extends JPanel{
         allowedKeyLength.add(32);
 
         submitButton.setEnabled(false);
-
-        submitButton.setText("Encrypt");
-
-        encryptRadioButton.addActionListener(e -> {
-            submitButton.setText("Encrypt");
-        });
-
-        decryptRadioButton.addActionListener(e -> {
-            submitButton.setText("Decrypt");
-        });
+        submitButton.setText(Type.ENCRYPT.toString());
+        encryptRadioButton.addActionListener(e -> submitButton.setText(Type.ENCRYPT.toString()));
+        decryptRadioButton.addActionListener(e -> submitButton.setText(Type.DECRYPT.toString()));
 
         inputButton.addActionListener(e -> {
             int returnVal = fc.showOpenDialog(Calculator.this);
@@ -118,7 +111,7 @@ public class Calculator extends JPanel{
             spec.setInputFile(inputFile);
             spec.setKeyFile(keyFile);
 
-            if (group.getSelection().getActionCommand().equals("enc")) {
+            if (group.getSelection().getActionCommand().equals(Type.ENCRYPT.toString())) {
                 spec.setType(Type.ENCRYPT);
                 try {
                     String result = Aes.start(spec);
