@@ -1,2 +1,2 @@
 # ctr-aes-calculator
-![alt tag](https://lh3.googleusercontent.com/zHR9hlIndBLuXbsEEApPJpNyP9JHClgczPnd42kf7GuT4ND1pdimljnXrJKKDFJ8jw0nTB70HnY2dII=w1366-h635)
+![alt tag](https://lh5.googleusercontent.com/tAvoB9dhPpEEwZZtp-w4DumoLhJU6yg7M9d2kQi0RutBD6DECpcogIASPR3KPARyz7Pbhs5W=w1366-h635)
