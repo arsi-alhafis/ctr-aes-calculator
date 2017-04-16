@@ -9,6 +9,7 @@ import com.aes.util.StringUtil;
 import com.aes.util.Type;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.io.File;
 import java.nio.file.Files;
@@ -51,6 +52,36 @@ public class Calculator extends JPanel{
 
         fc = new JFileChooser();
 
+        FileFilter inputFilter = new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.length() < 300 * 1024 * 1024;
+            }
+
+            @Override
+            public String getDescription() {
+                return "File size under 300MB";
+            }
+        };
+
+        FileFilter keyFilter = new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                if (f.isDirectory()) {
+                    return true;
+                }
+
+                return f.length() == 64 ||
+                        f.length() == 48 ||
+                        f.length() == 32;
+            }
+
+            @Override
+            public String getDescription() {
+                return "128, 192, or 256 bits key file";
+            }
+        };
+
         inputFileSelected = false;
         keyAllowed = false;
 
@@ -65,18 +96,24 @@ public class Calculator extends JPanel{
         decryptRadioButton.addActionListener(e -> submitButton.setText(Type.DECRYPT.toString()));
 
         inputButton.addActionListener(e -> {
+            fc.setFileFilter(inputFilter);
             int returnVal = fc.showOpenDialog(Calculator.this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 inputFile = fc.getSelectedFile();
-                inputFileSelected = true;
 
-                textArea2.setText(inputFile.getAbsolutePath());
+                textArea2.setText(inputFile.getAbsolutePath()+"\n\n");
 
-                if (keyAllowed) submitButton.setEnabled(true);
+                if (inputFile.length() < 300 * 1024 * 1024) {
+                    inputFileSelected = true;
+                    if (keyAllowed) submitButton.setEnabled(true);
+                } else {
+                    textArea2.append("Maximum file size allowed is 300MB");
+                }
             }
         });
 
         keyButton.addActionListener(e -> {
+            fc.setFileFilter(keyFilter);
             int returnVal = fc.showOpenDialog(Calculator.this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 keyFile = fc.getSelectedFile();
