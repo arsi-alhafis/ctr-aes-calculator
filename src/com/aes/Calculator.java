@@ -8,6 +8,7 @@ import com.aes.spec.CalculatorSpec;
 import com.aes.util.StringUtil;
 import com.aes.util.Type;
 
+import javax.crypto.Cipher;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 public class Calculator extends JPanel{
@@ -27,6 +29,7 @@ public class Calculator extends JPanel{
     private JTextArea textArea1;
     private JTextArea textArea2;
     private JTextArea textArea3;
+    private JTextField textField1;
     private JFileChooser fc;
 
     private ArrayList<Integer> allowedKeyLength;
@@ -41,9 +44,24 @@ public class Calculator extends JPanel{
         encryptRadioButton.setActionCommand(Type.ENCRYPT.toString());
         decryptRadioButton.setActionCommand(Type.DECRYPT.toString());
 
-        textArea2.setEditable(false);
-        textArea1.setEditable(false);
-        textArea3.setEditable(false);
+        textField1.setHorizontalAlignment(SwingConstants.CENTER);
+        allowedKeyLength = new ArrayList<>();
+
+        boolean isUnlimitedSupported = false;
+        try {
+            if (Cipher.getMaxAllowedKeyLength("AES") == Integer.MAX_VALUE) isUnlimitedSupported = true;
+        } catch (NoSuchAlgorithmException e) {
+            isUnlimitedSupported = false;
+        }
+
+        allowedKeyLength.add(16);
+        if (isUnlimitedSupported) {
+            allowedKeyLength.add(24);
+            allowedKeyLength.add(32);
+            textField1.setText("Allowed key size for AES: 128, 192, or 256 bits.");
+        } else {
+            textField1.setText("Allowed key size for AES: 128 bits, please install JCE Unlimited Strength Jurisdiction Policy Files for 192 or 256 bits key.");
+        }
 
         ButtonGroup group = new ButtonGroup();
         group.add(encryptRadioButton);
@@ -64,16 +82,10 @@ public class Calculator extends JPanel{
             }
         };
 
-        FileFilter keyFilter = new FileFilter() {
+        FileFilter unlimitedKeyFilter = new FileFilter() {
             @Override
             public boolean accept(File f) {
-                if (f.isDirectory()) {
-                    return true;
-                }
-
-                return f.length() == 64 ||
-                        f.length() == 48 ||
-                        f.length() == 32;
+                return f.isDirectory() || f.length() == 64 || f.length() == 48 || f.length() == 32;
             }
 
             @Override
@@ -82,13 +94,20 @@ public class Calculator extends JPanel{
             }
         };
 
+        FileFilter limitedKeyFilter = new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || f.length() == 32;
+            }
+
+            @Override
+            public String getDescription() {
+                return "128 bits key file";
+            }
+        };
+
         inputFileSelected = false;
         keyAllowed = false;
-
-        allowedKeyLength = new ArrayList<>();
-        allowedKeyLength.add(16);
-        allowedKeyLength.add(24);
-        allowedKeyLength.add(32);
 
         submitButton.setEnabled(false);
         submitButton.setText(Type.ENCRYPT.toString());
@@ -96,6 +115,7 @@ public class Calculator extends JPanel{
         decryptRadioButton.addActionListener(e -> submitButton.setText(Type.DECRYPT.toString()));
 
         inputButton.addActionListener(e -> {
+            fc.resetChoosableFileFilters();
             fc.setFileFilter(inputFilter);
             int returnVal = fc.showOpenDialog(Calculator.this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -107,13 +127,22 @@ public class Calculator extends JPanel{
                     inputFileSelected = true;
                     if (keyAllowed) submitButton.setEnabled(true);
                 } else {
+                    inputFileSelected = false;
+                    submitButton.setEnabled(false);
                     textArea2.append("Maximum file size allowed is 300MB");
                 }
             }
         });
 
+        boolean finalIsUnlimitedSupported = isUnlimitedSupported;
         keyButton.addActionListener(e -> {
-            fc.setFileFilter(keyFilter);
+            fc.resetChoosableFileFilters();
+            if (finalIsUnlimitedSupported) {
+                fc.setFileFilter(unlimitedKeyFilter);
+            } else {
+                fc.setFileFilter(limitedKeyFilter);
+            }
+
             int returnVal = fc.showOpenDialog(Calculator.this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 keyFile = fc.getSelectedFile();
@@ -131,13 +160,25 @@ public class Calculator extends JPanel{
                         textArea1.append(" [ALLOWED]");
                         if (inputFileSelected) submitButton.setEnabled(true);
                     } else {
+                        keyAllowed = false;
+                        submitButton.setEnabled(false);
                         textArea1.append(" [NOT ALLOWED]\n");
-                        textArea1.append("Use 128, 192, or 256 bits key.");
+                        if (finalIsUnlimitedSupported) {
+                            textArea1.append("Use 128, 192, or 256 bits key.");
+                        } else {
+                            textArea1.append("Use 128 bits key.");
+                        }
                     }
                 } catch (Exception e1) {
+                    keyAllowed = false;
+                    submitButton.setEnabled(false);
                     textArea1.setText(keyFile.getAbsolutePath() + "\n\n");
                     textArea1.append("[INVALID KEY FILE]\n");
-                    textArea1.append("Use 128, 192, or 256 bits key.\n");
+                    if (finalIsUnlimitedSupported) {
+                        textArea1.append("Use 128, 192, or 256 bits key.\n");
+                    } else {
+                        textArea1.append("Use 128 bits key.\n");
+                    }
                     textArea1.append("Key file must a hexadecimal string.");
                 }
             }
