@@ -54,12 +54,37 @@ public class Calculator extends JPanel{
             isUnlimitedSupported = false;
         }
 
+        FileFilter keyFilter;
+
         allowedKeyLength.add(16);
         if (isUnlimitedSupported) {
+            keyFilter = new FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return f.isDirectory() || f.length() == 64 || f.length() == 48 || f.length() == 32;
+                }
+
+                @Override
+                public String getDescription() {
+                    return "128, 192, or 256 bits key file";
+                }
+            };
+
             allowedKeyLength.add(24);
             allowedKeyLength.add(32);
             textField1.setText("Allowed key size for AES: 128, 192, or 256 bits.");
         } else {
+            keyFilter = new FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return f.isDirectory() || f.length() == 32;
+                }
+
+                @Override
+                public String getDescription() {
+                    return "128 bits key file";
+                }
+            };
             textField1.setText("Allowed key size for AES: 128 bits, please install JCE Unlimited Strength Jurisdiction Policy Files for 192 or 256 bits key.");
         }
 
@@ -82,30 +107,6 @@ public class Calculator extends JPanel{
             }
         };
 
-        FileFilter unlimitedKeyFilter = new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.isDirectory() || f.length() == 64 || f.length() == 48 || f.length() == 32;
-            }
-
-            @Override
-            public String getDescription() {
-                return "128, 192, or 256 bits key file";
-            }
-        };
-
-        FileFilter limitedKeyFilter = new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.isDirectory() || f.length() == 32;
-            }
-
-            @Override
-            public String getDescription() {
-                return "128 bits key file";
-            }
-        };
-
         inputFileSelected = false;
         keyAllowed = false;
 
@@ -115,6 +116,7 @@ public class Calculator extends JPanel{
         decryptRadioButton.addActionListener(e -> submitButton.setText(Type.DECRYPT.toString()));
 
         inputButton.addActionListener(e -> {
+            textArea2.setText("");
             fc.resetChoosableFileFilters();
             fc.setFileFilter(inputFilter);
             int returnVal = fc.showOpenDialog(Calculator.this);
@@ -136,12 +138,9 @@ public class Calculator extends JPanel{
 
         boolean finalIsUnlimitedSupported = isUnlimitedSupported;
         keyButton.addActionListener(e -> {
+            textArea1.setText("");
             fc.resetChoosableFileFilters();
-            if (finalIsUnlimitedSupported) {
-                fc.setFileFilter(unlimitedKeyFilter);
-            } else {
-                fc.setFileFilter(limitedKeyFilter);
-            }
+            fc.setFileFilter(keyFilter);
 
             int returnVal = fc.showOpenDialog(Calculator.this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -186,6 +185,7 @@ public class Calculator extends JPanel{
         });
 
         submitButton.addActionListener(e -> {
+            textArea3.setText("");
             CalculatorSpec spec = new CalculatorSpec();
             spec.setInputFile(inputFile);
             spec.setKeyFile(keyFile);
