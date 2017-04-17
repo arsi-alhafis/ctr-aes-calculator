@@ -150,6 +150,7 @@ public class Calculator extends JPanel{
                 Path keyPath = Paths.get(keyFile.getAbsolutePath());
                 try {
                     String keyHex = Files.readAllLines(keyPath).get(0);
+                    if (!keyHex.matches("-?[0-9a-fA-F]+")) throw new Exception();
                     byte[] keyBytes = StringUtil.hexStringToByteArray(keyHex);
 
                     textArea1.setText(keyFile.getAbsolutePath() + "\n\n");
