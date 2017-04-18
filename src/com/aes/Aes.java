@@ -37,7 +37,7 @@ class Aes {
 
     private static String encrypt(String fileName, byte[] input, byte[] keyBytes) throws Exception {
         SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
-        Cipher cipher = Cipher.getInstance("AES/CTR/PKCS5Padding");
+        Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
 
         String hexFileName = StringUtil.toHexString(fileName + ";");
         byte[] byteFileName = StringUtil.hexStringToByteArray(hexFileName);
@@ -45,7 +45,7 @@ class Aes {
         byte[] iv = StringUtil.generateIV();
 
         cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(input);
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(StringUtil.addPadding(input));
         CipherInputStream cipherInputStream = new CipherInputStream(byteArrayInputStream, cipher);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
@@ -64,7 +64,7 @@ class Aes {
 
     private static String decrypt(byte[] input, byte[] keyBytes) throws Exception{
         SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
-        Cipher cipher = Cipher.getInstance("AES/CTR/PKCS5Padding");
+        Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
 
         ByteArrayOutputStream byteArrayOutputStream;
 
@@ -78,7 +78,7 @@ class Aes {
         cipherOutputStream.write(input);
         cipherOutputStream.close();
 
-        byte[] decryptedByte = byteArrayOutputStream.toByteArray();
+        byte[] decryptedByte = StringUtil.removePadding(byteArrayOutputStream.toByteArray());
         int nameDelimiterPos = StringUtil.findNameDelimiter(decryptedByte);
         decryptedByte = ArrayUtils.removeElement(decryptedByte, (byte) 0x3B); // removing ";"
 

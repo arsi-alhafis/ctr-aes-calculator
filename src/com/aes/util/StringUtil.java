@@ -4,9 +4,12 @@ package com.aes.util;
  * Created by arsi on 07-Apr-17.
  */
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 public class StringUtil {
     public static String toHexString(byte[] ba) {
@@ -57,5 +60,21 @@ public class StringUtil {
         secureRandom.nextBytes(byteIV);
 
         return byteIV;
+    }
+
+    public static byte[] addPadding(byte[] input) {
+        int res = 16 - input.length % 16;
+        byte[] result = new byte[res];
+
+        Arrays.fill(result,(byte) res);
+        return ArrayUtils.addAll(input, result);
+    }
+
+    public static byte[] removePadding(byte[] input) {
+        int res = input[input.length - 1];
+        byte[] result = new byte[input.length - res];
+
+        System.arraycopy(input, 0, result, 0, result.length);
+        return result;
     }
 }
